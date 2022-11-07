@@ -25,7 +25,7 @@ use thiserror::Error;
 use super::{
     argument::ArgumentWitness,
     expr,
-    polynomials::{rot, xor},
+    polynomials::{and, rot, xor},
 };
 
 /// A row accessible from a given row, corresponds to the fact that we open all polynomials
@@ -117,7 +117,8 @@ pub enum GateType {
     // ForeignFieldMul = 26,
     // Gates for Keccak follow:
     Xor16 = 27,
-    Rot64 = 28,
+    And16 = 28,
+    Rot64 = 29,
 }
 
 /// Selector polynomial
@@ -252,6 +253,9 @@ impl<F: PrimeField> CircuitGate<F> {
             Xor16 => self
                 .verify_xor::<G>(row, witness, cs)
                 .map_err(|e| e.to_string()),
+            And16 => self
+                .verify_and::<G>(row, witness, cs)
+                .map_err(|e| e.to_string()),
             ForeignFieldAdd => self
                 .verify_foreign_field_add::<G>(row, witness, cs)
                 .map_err(|e| e.to_string()),
@@ -338,6 +342,7 @@ impl<F: PrimeField> CircuitGate<F> {
             }
             GateType::Rot64 => rot::Rot64::constraint_checks(&env),
             GateType::Xor16 => xor::Xor16::constraint_checks(&env),
+            GateType::And16 => and::And16::constraint_checks(&env),
             GateType::ForeignFieldAdd => {
                 foreign_field_add::circuitgates::ForeignFieldAdd::constraint_checks(&env)
             }
